@@ -297,7 +297,7 @@ async def home(
             data = await tmdb_get("/trending/movie/day", {"language": "en-US"})
             return await tmdb_cards_from_results(data.get("results", []), limit=limit)
         
-        if category not in {"popular", "top_rated", "upcoming"}:
+        if category not in {"popular", "top_rated", "now_playing", "upcoming"}:
             raise HTTPException(status_code=400, detail="Invalid category")
         
         data = await tmdb_get(f"/movie/{category}", {"language": "en-US", "page": 1})
