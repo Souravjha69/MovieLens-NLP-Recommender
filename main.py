@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+#.env, cors and configurations:
 load_dotenv()
 TMDB_API_KEY = os.getenv("TMDB_API_KEY")
 
@@ -34,6 +35,7 @@ app.add_middleware(
 )
 
 #For Global Variables codes:
+#Path configurations.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DF_PATH = os.path.join(BASE_DIR, "data", "movies_df.pkl")
@@ -134,4 +136,38 @@ async def tmdb_cards_from_results(
         )
         #For here this out will give me movie in particular card in proper format
     return out
+
+# This is for getting the details of the movie from tmdb and then it will return me the data of that movie in the form of dictionary and then i will use that data for recommendation
+async def tmdb_movie_details(movie_id: int) -> TMDBMovieDetails:
+    data = await tmdb_get(f"/movie/{movie_id}", {"language": "en-US"})
+    return TMDBMovieDetails(
+        tmdb_id=int(data["id"]),
+        title=data.get("title") or "",
+        overview=data.get("overview"),
+        release_date=data.get("release_date"),
+        poster_url=make_img_url(data.get("poster_path")),
+        backdrop_url=make_img_url(data.get("backdrop_path")),
+        genres=data.get("genres", []) or [],
+    )
+
+
+# This is for searching the movie from tmdb and then it will return me the data of that movie in the form of dictionary and then i will use that data for recommendation
+async def tmdb_search_movies(query: str, page: int = 1) -> Dict[str, Any]:
+    return await tmdb_get(
+        "/search/movie",
+        {
+            "query": query,
+            "include_adult": False,
+            "language": "en-US",
+            "page": page,
+        }
+    )
+
+
+# This is for searching the movie from tmdb and then it will return me the data of that movie in the form of dictionary and then i will use that data for recommendation but this will return me only the first result of that movie which means if user type in small it will also give me the same result as if user type in capital and also if user type in space it will also give me the same result as if user type in without space
+async def tmdb_search_first(query: str) -> Optional[dict]:
+    data = await tmdb_search_movies(query=query, page=1)
+    results = data.get("results", [])
+    return results[0] if results else None
+
 
