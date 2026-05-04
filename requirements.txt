@@ -4,3 +4,7 @@ seaborn
 matplotlib
 nltk
 scikit-learn
+fastapi
+uvicorn
+httpx
+python-dotenv
